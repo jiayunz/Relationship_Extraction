@@ -15,18 +15,18 @@ MAX_TEXTLEN = 64
 EMBEDDING_SIZE = 200
 FILTERS = 100
 BATCH_SIZE = 256
-EPOCHS = 100
+EPOCHS = 20
 INIT_LEARNING_RATE = 5e-3
 MIN_LEARNING_RATE = 1e-5
 DECAY_STEPS = 100
 DECAY_RATE = 0.9
-ATT_SIZE = 64
+ATT_SIZE = 200
 MODEL_PATH = 'model/'
-DROPOUT_RATE = 0.5
-DISPLAY_ITER = 5
+DROPOUT_RATE = 0.0
+DISPLAY_ITER = 1
 
-relationships = {'夫妻': 0, '恋情': 1, '前任': 2, '好友': 3, '血缘关系': 4, '其他': 5}
-reversed_relationships = {0: '夫妻', 1: '恋情', 2: '前任', 3: '好友', 4: '血缘关系', '其他': 5}
+relationships = {'夫妻': 0, '恋情': 1, '前任': 2, '好友': 3, '搭档': 4, '血缘关系': 5, '其他': 6}
+reversed_relationships = {0: '夫妻', 1: '恋情', 2: '前任', 3: '好友', 4: '搭档', 5: '血缘关系', 6: '其他'}
 class GenerateData():
     def __init__(self, rpath, tokenizer=None):
         self.rpath = rpath
@@ -51,13 +51,13 @@ class GenerateData():
                     content['label'] = '恋情'
                 if content['label'] in ['母子', '母女', '父女', '父子', '兄弟', '姐妹', '兄妹', '姐弟']:
                     content['label'] = '血缘关系'
-                if content['label'] in ['好友', '搭档']:
-                    content['label'] = '好友'
+                #if content['label'] in ['好友', '搭档']:
+                #    content['label'] = '好友'
                 #if content['label'] in ['兄弟', '姐妹', '兄妹', '姐弟']:
                 #    content['label'] = '兄弟姐妹'
                 elif content['label'] not in relationships:
-                    continue
-                    # content['label'] = '其他'
+                    #continue
+                    content['label'] = '其他'
                 text_seq = content["sentences"][:MAX_SEQLEN]
                 self.mask.append([True] * len(text_seq) + [False] * (MAX_SEQLEN - len(text_seq)))
                 if len(text_seq) < MAX_SEQLEN:
@@ -277,14 +277,14 @@ class TextCNN():
             ground_truth.extend(list(y_true))
 
         with open(str(is_training)+'result.txt', 'w') as wf:
-            for i, pred in enumerate(predictions):
-                wf.write(json.dumps({
+             for i, pred in enumerate(predictions):
+                 wf.write(json.dumps({
                     'pred': reversed_relationships[pred],
                     'truth': reversed_relationships[ground_truth[i]],
                     'people': people[i]
-                }) + '\n')
-            #if pred != ground_truth[i]:
-            #    print('pred:', reversed_relationships[pred], 'truth:', reversed_relationships[ground_truth[i]], 'people:', people[i])
+                 }) + '\n')
+        #    if pred != ground_truth[i]:
+        #        print('pred:', reversed_relationships[pred], 'truth:', reversed_relationships[ground_truth[i]], 'people:', people[i])
 
         print(metrics.classification_report(ground_truth, predictions, digits=4))
 
